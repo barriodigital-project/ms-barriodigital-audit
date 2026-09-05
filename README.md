@@ -1,25 +1,14 @@
 # ms-barriodigital-audit
 
-Microservicio encargado de la auditoría y trazabilidad de eventos de **BarrioDigital**.
-
-## Descripción
-
-Mantiene un timeline consultable de los acontecimientos relevantes asociados a los trámites.
-
-La auditoría se alimenta principalmente mediante eventos de Kafka, evitando acoplarla directamente al flujo transaccional principal.
+Microservicio encargado de la auditoría y trazabilidad de los trámites de **BarrioDigital**.
 
 ## Responsabilidades
 
-- Consumir eventos de dominio.
-- Persistir eventos relevantes.
-- Mantener trazabilidad.
-- Registrar actor.
-- Registrar acción.
-- Registrar fecha y hora.
-- Registrar cambios de estado.
-- Mantener `traceId` y `correlationId`.
-- Permitir consultas históricas.
-- Exponer información únicamente de lectura.
+- Consumir eventos desde Kafka.
+- Registrar eventos asociados a trámites.
+- Mantener timeline de auditoría.
+- Permitir consultas de trazabilidad.
+- Mantener información de solo lectura desde la API.
 
 ## Stack tecnológico
 
@@ -30,12 +19,13 @@ La auditoría se alimenta principalmente mediante eventos de Kafka, evitando aco
 - Hibernate
 - Maven
 - MySQL
-- Apache Kafka
+- Kafka
 - Spring Security
+- Eureka Client
 - Spring Boot Actuator
 - Docker
 
-## Puerto local
+## Puerto
 
 ```text
 8086
@@ -47,149 +37,74 @@ La auditoría se alimenta principalmente mediante eventos de Kafka, evitando aco
 barriodigital_audit_db
 ```
 
-Este microservicio es propietario exclusivo de la base de auditoría.
-
 ## Kafka
 
-Tópico principal consumido:
+Tópico:
 
 ```text
 requests.events
 ```
 
-Eventos esperados:
+Consumer Group:
+
+```text
+barriodigital-audit-group
+```
+
+Eventos principales:
 
 ```text
 REQUEST_CREATED
 REQUEST_ADMITTED
-REQUEST_IN_PROGRESS
-REQUEST_ON_SITE
 REQUEST_RESOLVED
 REQUEST_REJECTED
 ```
 
-Puede posteriormente publicar o mantener:
+## Modelo
 
 ```text
-audit.timeline
-```
-
-## Datos de auditoría
-
-Ejemplo conceptual:
-
-```json
-{
-  "eventId": "uuid",
-  "requestId": "REQ-2026-000001",
-  "eventType": "REQUEST_ADMITTED",
-  "actorId": "user-id",
-  "previousStatus": "INGRESADO",
-  "newStatus": "ADMITIDO",
-  "timestamp": "2026-09-05T13:30:00Z",
-  "traceId": "trace-id",
-  "correlationId": "REQ-2026-000001"
-}
+AuditEvent
+├── id
+├── requestId
+├── eventType
+├── actorId
+├── message
+└── timestamp
 ```
 
 ## API
 
-Solo lectura:
-
 ```http
-GET /api/v1/audit/events
 GET /api/v1/audit/requests/{requestId}/timeline
 ```
 
-Filtros previstos:
+## Flujo
 
 ```text
-requestId
-actorId
-eventType
-from
-to
-page
-size
+Requests
+   ↓
+Kafka
+   ↓
+Audit
+   ↓
+MySQL
 ```
-
-## Restricciones
-
-No se expondrán operaciones públicas de:
-
-```http
-POST
-PUT
-PATCH
-DELETE
-```
-
-sobre registros históricos de auditoría.
 
 ## Seguridad
 
-Roles permitidos principalmente:
+Roles principales:
 
 ```text
 ADMIN
 AUDITOR
 ```
 
-## Buenas prácticas Kafka
-
-- Consumer Groups.
-- Idempotencia.
-- Reintentos.
-- Dead Letter Topic.
-- Manejo de offsets.
-- Versionamiento de eventos.
-- `traceId`.
-- `correlationId`.
-
 ## Observabilidad
 
-Métricas relevantes:
-
-- eventos consumidos;
-- eventos fallidos;
-- consumer lag;
-- tiempo de procesamiento;
-- DLT.
-
-Herramientas:
-
 - Spring Boot Actuator.
-- CloudWatch.
-
-## Variables de entorno
-
-```env
-SERVER_PORT=8086
-
-MYSQL_HOST=
-MYSQL_PORT=3306
-MYSQL_DATABASE=barriodigital_audit_db
-MYSQL_USER=
-MYSQL_PASSWORD=
-
-KAFKA_BOOTSTRAP_SERVERS=
-
-EUREKA_SERVER_URL=
-COGNITO_ISSUER_URI=
-```
-
-## Contratos
-
-Repositorio:
-
-```text
-barriodigital-contracts
-```
-
-Contratos:
-
-- OpenAPI.
-- AsyncAPI.
+- Logs.
+- Métricas.
+- Amazon CloudWatch.
 
 ## Estructura esperada
 
@@ -203,13 +118,26 @@ src/
 │   │       ├── controller/
 │   │       ├── dto/
 │   │       ├── entity/
-│   │       ├── exception/
 │   │       ├── repository/
+│   │       ├── service/
 │   │       ├── security/
-│   │       └── service/
+│   │       └── exception/
 │   └── resources/
 │       └── application.yml
 └── test/
+```
+
+## Contratos
+
+```text
+barriodigital-contracts/openapi/audit.openapi.yaml
+barriodigital-contracts/asyncapi/kafka.asyncapi.yaml
+```
+
+## Ejecución
+
+```bash
+./mvnw spring-boot:run
 ```
 
 ## Docker
@@ -217,10 +145,6 @@ src/
 ```bash
 docker build -t barriodigital/audit:1.0.0 .
 ```
-
-## CI/CD
-
-GitHub Actions + SonarQube + Snyk + Docker + Amazon ECR.
 
 ## Estrategia Git
 
@@ -233,4 +157,4 @@ fix/*
 
 ## Estado
 
-🚧 Proyecto en etapa inicial de diseño y construcción.
+🚧 Proyecto en etapa inicial de diseño e implementación.
