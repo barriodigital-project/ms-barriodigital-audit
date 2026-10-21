@@ -19,8 +19,7 @@ Microservicio encargado de la auditoría y trazabilidad de los trámites de **Ba
 - Hibernate
 - Maven
 - MySQL
-- Spring Security
-- Eureka Client
+- Lombok
 - Spring Boot Actuator
 - Docker
 
@@ -77,6 +76,23 @@ AuditEvent
 GET /api/v1/audit/requests/{requestId}/timeline
 ```
 
+```bash
+curl http://localhost:8086/api/v1/audit/requests/00000000-0000-0000-0000-000000000001/timeline
+```
+
+```json
+[
+  {
+    "id": "6dcc94c3-d355-4ff4-9cb2-52e15952ffdc",
+    "requestId": "00000000-0000-0000-0000-000000000001",
+    "eventType": "REQUEST_CREATED",
+    "actorId": "citizen-123",
+    "message": "Solicitud ingresada",
+    "timestamp": "2026-01-01T10:00:00Z"
+  }
+]
+```
+
 ## Flujo futuro
 
 ```text
@@ -91,12 +107,9 @@ MySQL
 
 ## Seguridad
 
-Roles principales:
-
-```text
-ADMIN
-AUDITOR
-```
+El BFF/gateway autentica al usuario y valida permisos (`ADMIN`/`AUDITOR`).
+Este servicio no valida tokens y debe aceptar solo tráfico interno; no exponer
+directamente el puerto `8086`.
 
 ## Observabilidad
 
@@ -128,9 +141,18 @@ src/
 
 ## Alcance de la primera etapa
 
-Este primer incremento establece la estructura por capas para preparar la API
-de consulta. No incorpora Kafka ni una fuente de escritura de eventos; por lo
-tanto, la ingesta y persistencia funcional del timeline quedan pendientes.
+Se implementan el modelo, persistencia y endpoint de consulta del timeline. Sin
+una fuente de escritura, el timeline no tiene eventos: el endpoint responde
+HTTP 404 hasta integrar Kafka u otro mecanismo de carga. La ingesta no forma
+parte de esta etapa.
+
+## Configuración local
+
+El servicio escucha en `localhost:8086` y usa MySQL en `localhost:3306` por
+defecto. Se pueden sobrescribir `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`
+y `DB_PASSWORD`. `JPA_DDL_AUTO` controla el DDL de Hibernate (por defecto
+`update`; usar migraciones controladas en producción). Actuator expone
+`health`, `info` y `metrics` bajo `/actuator`.
 
 ## Contratos
 
