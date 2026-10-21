@@ -4,11 +4,11 @@ Microservicio encargado de la auditoría y trazabilidad de los trámites de **Ba
 
 ## Responsabilidades
 
-- Consumir eventos desde Kafka.
-- Registrar eventos asociados a trámites.
+- Consultar eventos asociados a trámites.
+- Persistir eventos recibidos cuando se implemente la ingesta.
 - Mantener timeline de auditoría.
 - Permitir consultas de trazabilidad.
-- Mantener información de solo lectura desde la API.
+- La ingesta de eventos desde Kafka se incorporará en una etapa posterior.
 
 ## Stack tecnológico
 
@@ -19,7 +19,6 @@ Microservicio encargado de la auditoría y trazabilidad de los trámites de **Ba
 - Hibernate
 - Maven
 - MySQL
-- Kafka
 - Spring Security
 - Eureka Client
 - Spring Boot Actuator
@@ -37,7 +36,7 @@ Microservicio encargado de la auditoría y trazabilidad de los trámites de **Ba
 barriodigital_audit_db
 ```
 
-## Kafka
+## Integración futura con Kafka
 
 Tópico:
 
@@ -78,7 +77,7 @@ AuditEvent
 GET /api/v1/audit/requests/{requestId}/timeline
 ```
 
-## Flujo
+## Flujo futuro
 
 ```text
 Requests
@@ -112,20 +111,26 @@ AUDITOR
 src/
 ├── main/
 │   ├── java/
-│   │   └── cl/duoc/barriodigital/audit/
-│   │       ├── config/
-│   │       ├── consumer/
+│   │   └── cl/brarriodigital/audit/
 │   │       ├── controller/
 │   │       ├── dto/
-│   │       ├── entity/
+│   │       │   ├── request/
+│   │       │   └── response/
+│   │       ├── exception/
+│   │       ├── model/
 │   │       ├── repository/
 │   │       ├── service/
-│   │       ├── security/
-│   │       └── exception/
+│   │       └── AuditMsApplication.java
 │   └── resources/
-│       └── application.yml
+│       └── application.properties
 └── test/
 ```
+
+## Alcance de la primera etapa
+
+Este primer incremento establece la estructura por capas para preparar la API
+de consulta. No incorpora Kafka ni una fuente de escritura de eventos; por lo
+tanto, la ingesta y persistencia funcional del timeline quedan pendientes.
 
 ## Contratos
 
