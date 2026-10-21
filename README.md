@@ -35,6 +35,9 @@ Microservicio encargado de la auditoría y trazabilidad de los trámites de **Ba
 barriodigital_audit_db
 ```
 
+Al ejecutar desde esta carpeta, Spring carga `DB_PASSWORD` desde el archivo
+compartido `../.env` del workspace. Ese archivo local no se versiona.
+
 ## Integración futura con Kafka
 
 Tópico:
