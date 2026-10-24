@@ -32,7 +32,7 @@ Microservicio encargado de la auditoría y trazabilidad de los trámites de **Ba
 ## Base de datos
 
 ```text
-barriodigital_audit_db
+audit_db
 ```
 
 Al ejecutar desde esta carpeta, Spring carga `DB_PASSWORD` desde el archivo
@@ -156,6 +156,11 @@ defecto. Se pueden sobrescribir `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`
 y `DB_PASSWORD`. `JPA_DDL_AUTO` controla el DDL de Hibernate (por defecto
 `update`; usar migraciones controladas en producción). Actuator expone
 `health`, `info` y `metrics` bajo `/actuator`.
+
+## Service Discovery
+
+El servicio se registra en Eureka. Por defecto usa
+`http://localhost:8761/eureka/`; se puede cambiar mediante `EUREKA_SERVER_URL`.
 
 ## Contratos
 
